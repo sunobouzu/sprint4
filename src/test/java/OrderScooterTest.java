@@ -12,6 +12,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import page.DeliveryPage;
 import page.MainPage;
 
 import java.text.SimpleDateFormat;
@@ -19,7 +20,7 @@ import java.util.Calendar;
 
 public class OrderScooterTest {
     private WebDriver driver;
-    private MainPage mainPage;
+    private DeliveryPage deliveryPage;
     private static final String ORDER_URL = "https://qa-scooter.praktikum-services.ru/";
 
     @Before
@@ -28,20 +29,17 @@ public class OrderScooterTest {
         driver = new ChromeDriver();
         driver.manage().window().maximize();
         driver.get(ORDER_URL);
-        mainPage = new MainPage(driver);
+        deliveryPage = new DeliveryPage(driver);
     }
 
     @Test
     public void testFullOrderFlow() {
-        mainPage.clickOrderButton(); // Клик по кнопке "Заказать"
+        DeliveryPage.clickOrderButton(); // Клик по кнопке "Заказать"
 
         // Заполнение первой формы заказа
         fillOrderForm("Иван", "Иванов", "Москва, Какой-то адрес", "+79000000000");
 
         fillOrderDetails();
-
-        // Проверка закрытия модального окна после подтверждения заказа
-        assertModalClosedAfterConfirm();
     }
 
     private void fillOrderForm(String name, String surname, String address, String phone) {
@@ -98,14 +96,16 @@ public class OrderScooterTest {
 
         // Клик по кнопке "Да"
         wait.until(ExpectedConditions.elementToBeClickable(Locators.CONFIRM_BUTTON)).click();
+
+        assertModalAccept();
     }
 
-    private void assertModalClosedAfterConfirm() {
+    private void assertModalAccept() {
         WebDriverWait wait = new WebDriverWait(driver, 10); // Ожидаем 10 секунд
 
         try {
-            // Проверка, что модальное окно закрылось
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(Locators.MODAL_WINDOW));
+            // Проверка, что модальное окно открылось
+            wait.until(ExpectedConditions.visibilityOfElementLocated(Locators.MODAL_WINDOW_SUCCESS));
         } catch (Exception e) {
             Assert.fail("Заказ не был завершен");
         }
